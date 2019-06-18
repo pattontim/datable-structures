@@ -4,6 +4,7 @@ import faulthandler
 
 print("None has id ", id(None))
 
+# convert obj_id to its original object
 def di(obj_id):
     return _ctypes.PyObj_FromPtr(obj_id)
 
@@ -14,25 +15,13 @@ class Node(object):
                 pass
 
             self.data = data
-            # self.prev = prev
-            # self.next = next
-            # self.nextprev = prev^next
-            # self.nextprev = prev.__xor__(next)
-            # self.nextprev = Node.__xor__(next)
             self.nextprev = Node.xor(prev, next)
             # self.nextprev = (next if next is not None else 0)^(prev if prev is not None else 0)
         def xor(a, b):
             return id(a)^id(b)
-            # if(a is None):
-            #     return id(b)
-            # elif(b is None):
-            #     return id(a)
-            # elif(b is None and a is None):
-            #     return None
-            # else:
-            #     return id(a)^id(b)
         def __xor__(self, other):
             pass
+            # legacy unpythonic code
             # if(self is None):
             #     return id(other)
             # elif(other is None):
@@ -52,20 +41,20 @@ class DoubleList(object):
         if self.head is None:
             self.head = self.tail = new_node
         else:
-            # new_node.prev = self.tail
-            # new_node.next = None
-            # # # new_node.nextprev = Node.xor(self.tail, None)
             new_node.nextprev = Node.xor(self.tail, None)
-            # # added - self.tail.prev = 
-            # self.tail.next = new_node
-            tail_prev = Node.xor(self.tail.nextprev, self.tail)
+            
+            # detected self reference, happens with first element.
+            if(self.tail.nextprev == 0):
+                tail_prev = id(None)
+            else:
+                tail_prev = id(None)^self.tail.nextprev
+
             tail_next = id(new_node)
             print("Linked node ref ", tail_prev, " to ", tail_next)
             self.tail.nextprev = tail_prev^tail_next
             self.tail = new_node
  
-# Solution: make XOR return the actual object, which is treated by assignment like an object (doesn't copy)
-
+    # FIXME not implemented. 
     def remove(self, node_value):
         current_node = self.head
  
@@ -83,8 +72,7 @@ class DoubleList(object):
             next_node = Node.xor(current_node.prev, current_node.nextprev)
             current_node = next_node
             # current_node = current_node
-
- 
+            
     def show(self):
         print("Show list data:")
         current_node = self.head
